@@ -55,24 +55,14 @@ bool SensirionI2CDevice::write_command_(uint16_t command, CommandLen command_len
     temp[raw_idx++] = command & 0xFF;
   } else {
     // command is 2 bytes
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
     temp[raw_idx++] = command >> 8;
     temp[raw_idx++] = command & 0xFF;
-#else
-    temp[raw_idx++] = command & 0xFF;
-    temp[raw_idx++] = command >> 8;
-#endif
   }
   // add parameters followed by crc
   // skipped if len == 0
   for (size_t i = 0; i < data_len; i++) {
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
     temp[raw_idx++] = data[i] >> 8;
     temp[raw_idx++] = data[i] & 0xFF;
-#else
-    temp[raw_idx++] = data[i] & 0xFF;
-    temp[raw_idx++] = data[i] >> 8;
-#endif
     temp[raw_idx++] = sht_crc_(data[i]);
   }
   last_error_ = this->write(temp, raw_idx);
@@ -97,11 +87,7 @@ bool SensirionI2CDevice::get_register_(uint16_t reg, CommandLen command_len, uin
 uint8_t SensirionI2CDevice::sht_crc_(uint16_t data) {
   uint8_t bit;
   uint8_t crc = 0xFF;
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
   crc ^= data >> 8;
-#else
-  crc ^= data & 0xFF;
-#endif
   for (bit = 8; bit > 0; --bit) {
     if (crc & 0x80) {
       crc = (crc << 1) ^ crc_polynomial_;
@@ -109,11 +95,7 @@ uint8_t SensirionI2CDevice::sht_crc_(uint16_t data) {
       crc = (crc << 1);
     }
   }
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
   crc ^= data & 0xFF;
-#else
-  crc ^= data >> 8;
-#endif
   for (bit = 8; bit > 0; --bit) {
     if (crc & 0x80) {
       crc = (crc << 1) ^ crc_polynomial_;
